@@ -10,19 +10,70 @@ app.use(cors());
 const users = [];
 
 function checksExistsUserAccount(request, response, next) {
-  // Complete aqui
+  const { username } = request.headers;
+
+  const user = users.find(user => user.username === username);
+
+  if(!user) {
+    return response.status(404).json({error: "User does not exists! "});
+  }
+  
+  request.user = user;
+
+  return next();
 }
 
 function checksCreateTodosUserAvailability(request, response, next) {
-  // Complete aqui
+  const { user } = request;
+
+  if(user.pro === false && user.todos.length >= 10 ) {
+    return response.status(403).json({ error: "User is not allowed to create a new To-Do" });
+  }
+
+  return next();
 }
 
 function checksTodoExists(request, response, next) {
-  // Complete aqui
+  const { username } = request.headers;
+  const { id } = request.params;
+
+  // Validação de UUID
+  if(!validate(id)) {
+    return response.status(400).json({ error: "Invalid To-do Identifier" });
+  }
+
+  const user = users.find(user => user.username === username);
+
+  if(!user) {
+    return response.status(404).json({ error: "User not Founded! "});
+  }
+
+  const todo = user.todos.find(todo => todo.id === id);
+
+  if(!todo) {
+    return response.status(404).json({ error: "To-do not founded! "});
+  } 
+
+  
+  request.user = user;
+  request.todo = todo;
+
+  return next();
+
 }
 
 function findUserById(request, response, next) {
-  // Complete aqui
+  const { id } = request.params; 
+
+  const user = users.find(user => user.id === id);
+
+  if(!user) {
+    return response.status(404).json({ error: "User ID was not found! "});
+  }
+
+  request.user = user;
+
+  return next();
 }
 
 app.post('/users', (request, response) => {
